@@ -37,3 +37,7 @@ const marker = new Zksy('box',{
 ## 2.0 版本
 
 1.  新增 DrawGraph 组件，支持按需和全局导入，传入参数 listData 就可以画实时框
+
+## 2.1 版本
+
+1.  新增 computeRationCoord 方法，可以根据盒子的宽高计算出比例，得出真实展示在画布上的左边

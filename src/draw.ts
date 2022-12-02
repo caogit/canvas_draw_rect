@@ -11,6 +11,14 @@ interface IReacData{
         color?:string
 }
 
+type TserviceDataFormatF = number[][][]
+
+enum EserviceDataType{
+    StandardCoordinates,
+    FourCoordinates
+
+}
+
 class CanvasDraw {
     id
     options
@@ -29,6 +37,7 @@ class CanvasDraw {
         
         // 获取传入id的宽高
         const el = document.getElementById(this.id) as HTMLElement
+        console.log('🤡 ~~ el', el)
        
         const {offsetWidth,offsetHeight} = el
 
@@ -67,7 +76,29 @@ class CanvasDraw {
             })
         })
     }
-
+    // 根据盒子的宽高计算出比例，得出真实展示在画布上的左边
+    computeRationCoord(serviceData:TserviceDataFormatF,type:EserviceDataType=EserviceDataType.StandardCoordinates){
+        console.log('🤡 ~~ serviceData', serviceData)
+        let handleData = []
+        console.log('🤡 ~~ type', type)
+        switch (type) {
+            // 将  [ [21, 282],[21, 432],[90, 432],[90, 282]] 处理成 [40, 40, 100, 100]
+            case EserviceDataType.FourCoordinates:
+                if(!serviceData.length) return
+                handleData=  serviceData.map(item => {
+                    console.log('🤡 ~~ item', item)
+                    const [x1,y1,y2,x2] = item 
+                    const [x,y,width,height] = [x1[0],x1[1],x2[0]-x1[0],y1[1]-x1[1]]
+                    console.log('🤡 ~~ [x,y,width,height]', [x,y,width,height])
+                    return [x,y,width,height] 
+                });
+                break;
+            case EserviceDataType.StandardCoordinates:
+                handleData = serviceData
+                break;
+        }
+        return handleData
+    }
     // 主动设置ServiceData
      setData(listData:IReacData[]){
         this.remove()
