@@ -1,6 +1,6 @@
 {
   "name": "canvas_draw_rect",
-  "version": "1.9.0",
+  "version": "2.2.0",
   "description": "使用 canvas 绘制矩形框",
   "main": "dist/components.esm.js",
   "types": "src/index.d.ts",

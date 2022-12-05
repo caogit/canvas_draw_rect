@@ -10,7 +10,7 @@ import CanvasDraw from '../../src/draw'
         name:'DrawGraph',
         props:{
             listData:Array,
-            widthAndHeightRatio:{
+            algWidthAndHeight:{
                 type:Array,
                 default:()=>{
                     return [1920,1080]
@@ -19,6 +19,10 @@ import CanvasDraw from '../../src/draw'
             serviceDataType:{
                 type:Number,
                 default:0
+            },
+            color:{
+                type:String,
+                default:'red'
             }
 
         },
@@ -32,8 +36,9 @@ import CanvasDraw from '../../src/draw'
                 handler:function(v,oldv){
                     console.log('🤡 ~~ v', v)
                     const serviceData  = v.map(item=>{
-                        return {...v,serviceData:this.instance.computeRationCoord(item.serviceData,this.serviceDataType)}
+                        return {...item,serviceData:this.instance.computeRationCoord(item.serviceData,this.serviceDataType)}
                     })
+                     console.log('🤡 ~~ serviceData', serviceData)
                      this.instance.setServiceData(serviceData)
                 }
             }
@@ -41,6 +46,8 @@ import CanvasDraw from '../../src/draw'
         mounted(){
             console.log('canvas初始化');
             this.instance = new CanvasDraw('drawGrpahBox',{
+                algWidthAndHeight:this.algWidthAndHeight,
+                color:this.color,
                 rectData:[
                     
                 ]
