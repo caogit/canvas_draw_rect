@@ -6,6 +6,7 @@
   "types": "src/index.d.ts",
   "type": "module",
   "scripts": {
+    "dev": "rollup -wc",
     "build": "npm run build:umd & npm run build:es & npm run build:unpkg",
     "build:umd": "rollup -c --format umd --file dist/components.umd.js",
     "build:es": "rollup -c --format es --file dist/components.esm.js",
@@ -38,7 +39,9 @@
     "@babel/core": "^7.20.2",
     "@babel/preset-env": "^7.20.2",
     "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-livereload": "^2.0.5",
     "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-serve": "^2.0.2",
     "rollup-plugin-typescript2": "^0.34.1",
     "vue": "^2.6.12",
     "vue-template-compiler": "^2.6.12"

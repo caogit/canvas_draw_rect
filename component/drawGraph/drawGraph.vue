@@ -35,12 +35,16 @@ import CanvasDraw from '../../src/draw'
             listData:{
                 handler:function(v,oldv){
                     console.log('🤡 ~~ v', v)
+                    if(!v.length) return
+                    this.$nextTick(()=>{
                     const serviceData  = v.map(item=>{
                         return {...item,serviceData:this.instance.computeRationCoord(item.serviceData,this.serviceDataType)}
                     })
                      console.log('🤡 ~~ serviceData', serviceData)
                      this.instance.setServiceData(serviceData)
-                }
+                    })
+                },
+                immediate:true
             }
         },
         mounted(){

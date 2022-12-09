@@ -5,6 +5,164 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>webpack & TS</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
   </head>
-  <body></body>
+  <style>
+    #painter {
+      width: 1000px;
+      height: 500px;
+      background-color: antiquewhite;
+      position: relative;
+      margin: auto;
+    }
+  </style>
+  <body>
+    <button id="react">矩形</button>
+
+    <div id="painter">
+      <canvas id="canvasId" width="1000px" height="500px"></canvas>
+    </div>
+  </body>
+  <script src="./dist/bundle.js" type="module"></script>
+  <script>
+    let ctx
+    const defaultPointCorrd = {
+      x1: [20, 20],
+      y1: [20, 40],
+      y2: [40, 40],
+      x2: [40, 20],
+    }
+    let pressCorrd = null // 当前按下圆的坐标
+    let drawType = null // 当前要开始绘制的类型
+    let haveGraph = false // 页面中是否存在图形
+
+    window.onload = function () {
+      draw()
+    }
+
+    const react = document.getElementById('react')
+    react.onclick = function () {
+      drawType = 'react'
+    }
+
+    function draw() {
+      const canvas = document.getElementById('canvasId')
+      ctx = canvas.getContext('2d')
+      // initCanvas()
+      mouseDown(ctx, canvas)
+      mouseup(ctx, canvas)
+      mouseMove(ctx, canvas)
+      mouseOut(ctx, canvas)
+    }
+    function initCanvas() {
+      console.log(11)
+      pointDrawCircle(defaultPointCorrd)
+      drawLine(defaultPointCorrd)
+      haveGraph = true
+    }
+    // 画圆
+    // 这里如果发现画的圆的位置和实际的不对应，可能是canvas的宽高需要必须按照行内样式设置
+    function drawCircle(x, y, radius = 5) {
+      ctx.beginPath()
+      ctx.strokeStyle = '#000'
+      ctx.arc(x, y, radius, 0, Math.PI * 2)
+      ctx.fillStyle = '#000'
+      ctx.fill()
+      ctx.stroke()
+    }
+    // 根据 x1: [20, 20], 这种坐标格式画圆
+    function pointDrawCircle(pointCorrd) {
+      Object.entries(pointCorrd).forEach(([key, value]) => {
+        const [x, y] = value
+        drawCircle(x, y)
+      })
+    }
+
+    // 鼠标按下
+    function mouseDown(ctx, ele) {
+      ele.onmousedown = function (e) {
+        if (!drawType) return
+
+        switch (drawType) {
+          case 'react':
+            if (!haveGraph) {
+              initCanvas()
+            }
+
+            break
+
+          default:
+            break
+        }
+
+        const { offsetX, offsetY } = e || {}
+        for (const [key, value] of Object.entries(defaultPointCorrd)) {
+          // if (value == [offsetX, offsetY]) {
+          //   pressCorrd = key
+          // }
+          if (
+            value[0] < offsetX + 5 &&
+            value[0] > offsetX - 5 &&
+            value[1] < offsetY + 5 &&
+            value[1] > offsetY - 5
+          ) {
+            pressCorrd = key
+          }
+        }
+      }
+    }
+    //画线
+    function drawLine({ x1, y1, y2, x2 }) {
+      ctx.beginPath()
+      ctx.moveTo(x1[0], x1[1])
+      ctx.lineTo(y1[0], y1[1])
+      ctx.lineTo(y2[0], y2[1])
+      ctx.lineTo(x2[0], x2[1])
+      ctx.lineWidth = 2
+      ctx.strokeStyle = '#28B1D9'
+      ctx.closePath()
+      ctx.fillStyle = 'rgba(40, 177, 217, 0.2)'
+      ctx.fill()
+      ctx.stroke()
+    }
+
+    // 鼠标抬起
+    function mouseup(ctx, ele) {
+      ele.onmouseup = function (e) {
+        const { offsetX, offsetY } = e || {}
+        if (pressCorrd) {
+          clearCanvas()
+          defaultPointCorrd[pressCorrd] = [offsetX, offsetY]
+          pointDrawCircle(defaultPointCorrd)
+          drawLine(defaultPointCorrd)
+        }
+        pressCorrd = ''
+      }
+    }
+
+    // 鼠标移动
+    function mouseMove(ctx, ele) {
+      ele.onmousemove = function (e) {
+        if (pressCorrd) {
+          const { offsetX, offsetY } = e || {}
+          defaultPointCorrd[pressCorrd] = [offsetX, offsetY]
+          clearCanvas()
+          pointDrawCircle(defaultPointCorrd)
+          drawLine(defaultPointCorrd)
+        }
+      }
+    }
+
+    // 鼠标离开元素
+    function mouseOut(ctx, ele) {
+      ele.onmouseout = function (e) {
+        pressCorrd = null
+      }
+    }
+
+    // 清空画布
+    function clearCanvas() {
+      ctx.clearRect(0, 0, 1000, 500)
+    }
+  </script>
 </html>

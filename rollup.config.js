@@ -6,18 +6,28 @@ import vue from 'rollup-plugin-vue' //  Compile Vue components.
 import filesize from 'rollup-plugin-filesize' // Display the file size of the bundle in the console.
 import replace from 'rollup-plugin-replace' // Replace occurrences of a set of strings.
 import babel from 'rollup-plugin-babel' // 用于将rollup与bable之间的无缝集成
+import serve from 'rollup-plugin-serve'
+import livereload from 'rollup-plugin-livereload'
 
 
 const config = {
   input: "./src/index.ts", // 必须，入口文件
   output: { // 必须，输出文件 (如果要输出多个，可以是一个数组)
     name:'version',
-    exports: "named", // 输出多个文件
+    file: 'dist/bundle.js',
+    // exports: "named", // 输出多个文件
     globals: {
       vue: "Vue" // 告诉rollup全局变量Vue即是vue
     }
   },
   plugins: [ // 引入的插件在这里配置
+    serve({
+      contentBase:'',
+      host: 'localhost',
+      port:'8020',
+      open: true
+    }),
+    livereload('dist'),
     nodeResolve(),
     commonjs(),
     replace({
