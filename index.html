@@ -25,19 +25,31 @@
   </body>
   <script src="./dist/bundle.js" type="module"></script>
   <script>
-    let ctx
     const defaultPointCorrd = {
       x1: [20, 20],
-      y1: [20, 40],
-      y2: [40, 40],
-      x2: [40, 20],
+      y1: [20, 200],
+      y2: [200, 200],
+      x2: [200, 20],
     }
     let pressCorrd = null // 当前按下圆的坐标
     let drawType = null // 当前要开始绘制的类型
     let haveGraph = false // 页面中是否存在图形
 
     window.onload = function () {
-      draw()
+      let defaultCtx
+      let outCtx
+      let outCanvas
+        // 创建离屏canvas自执行函数
+      ;(function () {
+        outCanvas = document.createElement('canvas')
+        outCanvas.width = 1000
+        outCanvas.height = 500
+        outCtx = outCanvas.getContext('2d')
+      })()
+      // 获取页面canvas
+      const canvas = document.getElementById('canvasId')
+      defaultCtx = canvas.getContext('2d')
+      draw(defaultCtx, outCtx, canvas)
     }
 
     const react = document.getElementById('react')
@@ -45,24 +57,21 @@
       drawType = 'react'
     }
 
-    function draw() {
-      const canvas = document.getElementById('canvasId')
-      ctx = canvas.getContext('2d')
-      // initCanvas()
-      mouseDown(ctx, canvas)
-      mouseup(ctx, canvas)
-      mouseMove(ctx, canvas)
-      mouseOut(ctx, canvas)
+    function draw(defaultCtx, outCtx, canvas) {
+      mouseDown(defaultCtx, canvas)
+      mouseup(canvas)
+      mouseMove(defaultCtx, outCtx, canvas)
+      mouseOut(canvas)
     }
-    function initCanvas() {
-      console.log(11)
-      pointDrawCircle(defaultPointCorrd)
-      drawLine(defaultPointCorrd)
+    function initCanvas(ctx) {
+      console.log('🤡 ~~ ctx', ctx)
+      pointDrawCircle(defaultPointCorrd, ctx)
+      drawLine(defaultPointCorrd, ctx)
       haveGraph = true
     }
     // 画圆
     // 这里如果发现画的圆的位置和实际的不对应，可能是canvas的宽高需要必须按照行内样式设置
-    function drawCircle(x, y, radius = 5) {
+    function drawCircle(x, y, ctx, radius = 5) {
       ctx.beginPath()
       ctx.strokeStyle = '#000'
       ctx.arc(x, y, radius, 0, Math.PI * 2)
@@ -71,10 +80,10 @@
       ctx.stroke()
     }
     // 根据 x1: [20, 20], 这种坐标格式画圆
-    function pointDrawCircle(pointCorrd) {
+    function pointDrawCircle(pointCorrd, ctx) {
       Object.entries(pointCorrd).forEach(([key, value]) => {
         const [x, y] = value
-        drawCircle(x, y)
+        drawCircle(x, y, ctx)
       })
     }
 
@@ -86,7 +95,7 @@
         switch (drawType) {
           case 'react':
             if (!haveGraph) {
-              initCanvas()
+              initCanvas(ctx)
             }
 
             break
@@ -112,7 +121,8 @@
       }
     }
     //画线
-    function drawLine({ x1, y1, y2, x2 }) {
+    function drawLine(pointCorrd, ctx) {
+      const { x1, y1, y2, x2 } = pointCorrd ?? {}
       ctx.beginPath()
       ctx.moveTo(x1[0], x1[1])
       ctx.lineTo(y1[0], y1[1])
@@ -127,34 +137,52 @@
     }
 
     // 鼠标抬起
-    function mouseup(ctx, ele) {
+    function mouseup(ele) {
       ele.onmouseup = function (e) {
         const { offsetX, offsetY } = e || {}
-        if (pressCorrd) {
-          clearCanvas()
-          defaultPointCorrd[pressCorrd] = [offsetX, offsetY]
-          pointDrawCircle(defaultPointCorrd)
-          drawLine(defaultPointCorrd)
-        }
-        pressCorrd = ''
+        // 鼠标抬起后设置当前按下的坐标为null
+        pressCorrd = null
       }
     }
 
     // 鼠标移动
-    function mouseMove(ctx, ele) {
+    function mouseMove(defaultCtx, outCtx, ele) {
       ele.onmousemove = function (e) {
         if (pressCorrd) {
           const { offsetX, offsetY } = e || {}
           defaultPointCorrd[pressCorrd] = [offsetX, offsetY]
-          clearCanvas()
-          pointDrawCircle(defaultPointCorrd)
-          drawLine(defaultPointCorrd)
+          outDraw(outCtx, defaultCtx)
         }
       }
     }
 
+    var startTime
+    var endTime
+    //离屏canvas上绘制之后drawImage到domCanvas中
+    function outDraw(outCtx, defaultCtx) {
+      outCtx.clearRect(0, 0, outCtx.canvas.width, outCtx.canvas.height)
+      startTime = performance.now()
+
+      pointDrawCircle(defaultPointCorrd, outCtx)
+      drawLine(defaultPointCorrd, outCtx)
+      defaultCtx.clearRect(
+        0,
+        0,
+        defaultCtx.canvas.width,
+        defaultCtx.canvas.height
+      )
+      defaultCtx.drawImage(outCtx.canvas, 0, 0)
+
+      // 记录渲染结束时间
+      endTime = performance.now()
+      // 计算渲染所花费的时间
+      var elapsedTime = endTime - startTime
+
+      console.log('渲染所花费的时间：' + elapsedTime + '毫秒')
+    }
+
     // 鼠标离开元素
-    function mouseOut(ctx, ele) {
+    function mouseOut(ele) {
       ele.onmouseout = function (e) {
         pressCorrd = null
       }
